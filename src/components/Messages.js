@@ -12,6 +12,10 @@ const Messages = ({ account, messages, currentChannel }) => {
 
   console.log(currentChannel);
 
+  const [message, setMessage] = useState("");
+
+  const messageEndRef = useRef(null)
+
 
   const showMessage = () => {
     if (!currentChannel) {
@@ -33,6 +37,37 @@ const Messages = ({ account, messages, currentChannel }) => {
     }
   };
 
+  const sendMessage = async (e) => {
+    e.preventDefault();
+
+    console.log(message);
+
+
+    
+    const messageObj = {
+      channel : currentChannel.id.toString(),
+      account : account,
+      text : message
+    }
+
+    if (message !== "") {
+      socket.emit("new message", messageObj);
+    }
+
+    
+    setMessage("");
+  }
+
+  const scrollHandler = () => {
+    setTimeout(()=>{
+      messageEndRef.current.scrollIntoView({behavior:'smooth'})
+    })
+  }
+
+  useEffect(() => {
+    scrollHandler();
+  }, [messages]);
+
   return (
     <div className="text">
       <div className="messages">
@@ -40,8 +75,22 @@ const Messages = ({ account, messages, currentChannel }) => {
 
       {showMessage()}
 
+
+      <div ref={messageEndRef}/>
+
       </div>
 
+      <form onSubmit={sendMessage}>
+        {currentChannel && account ? (
+          <input type="text" value={message} placeholder={`Message #${currentChannel.name}`} onChange={(e) => setMessage(e.target.value)} />
+        ) : (
+          <input type="text" value="" placeholder={`Please Connect Wallet / Join the Channel`} disabled />
+        )}
+
+        <button type="submit">
+          <img src={send} alt="Send Message" />
+        </button>
+      </form>
 
     </div>
   );
